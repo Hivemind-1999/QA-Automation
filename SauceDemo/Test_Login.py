@@ -11,12 +11,23 @@ wait = WebDriverWait(driver, 5)
 driver.get(URL)
 #driver.maximize_window()
 
+def browser():
+	URL = "https://www.saucedemo.com"
+	driver = webdriver.Firefox()
+	wait = WebDriverWait(driver, 5)
+	driver.get(URL)
+	
+	yield driver
+
+	driver.quit()
+
 username_handle = By.ID, "user-name"
 username_input = wait.until(EC.presence_of_element_located(username_handle))
 password_input = driver.find_element(By.ID, "password")
 login_button = driver.find_element(By. ID, "login-button")
 
-def Test_Success(username, password):
+@pytest.fixture()
+def Test_Success(browser, username, password):
 	username_input.send_keys(username)
 	password_input.send_keys(password)
 
@@ -27,7 +38,8 @@ def Test_Success(username, password):
 
 	assert site_header == "Products"
 
-def Test_Wrong_Password(username, password):
+@pytest.fixture()
+def Test_Wrong_Password(browser, username, password):
 	username_input.send_keys(username)
 	password_input.send_keys(password)
 
@@ -43,4 +55,4 @@ def Test_Wrong_Password(username, password):
 	assert error_text == "Epic sadface: Username and password do not match any user in this service"
 
 #Test_Success("standard_user", "secret_sauce")
-Test_Wrong_Password("standard_user", "12345")
+#Test_Wrong_Password("standard_user", "12345")
