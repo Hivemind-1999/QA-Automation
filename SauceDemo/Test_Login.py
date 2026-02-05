@@ -1,4 +1,3 @@
-import time
 import pytest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -6,40 +5,51 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 URL = "https://www.saucedemo.com"
-driver = webdriver.Firefox()
-wait = WebDriverWait(driver, 5)
-driver.get(URL)
-#driver.maximize_window()
-
-def browser():
-	URL = "https://www.saucedemo.com"
-	driver = webdriver.Firefox()
-	wait = WebDriverWait(driver, 5)
-	driver.get(URL)
-	
+@pytest.fixture
+def driver():
+	options = webdriver.FirefoxOptions()
+	options.add_argument("--headless=new")	
+	driver = webdriver.Firefox(options=options)
 	yield driver
 
 	driver.quit()
 
-username_handle = By.ID, "user-name"
-username_input = wait.until(EC.presence_of_element_located(username_handle))
-password_input = driver.find_element(By.ID, "password")
-login_button = driver.find_element(By. ID, "login-button")
+@pytest.mark.parametrize("username, password", [("standard_user", "secret_sauce")])
+def test_Success(driver, username, password):
 
-@pytest.fixture()
-def Test_Success(browser, username, password):
+	driver.get(URL)
+	wait = WebDriverWait(driver, 5)
+	
+	username_handle = (By.ID, "user-name")
+	PageReady = EC.presence_of_element_located(username_handle)
+
+	username_input = wait.until(PageReady)
+	password_input = driver.find_element(By.ID, "password")
+	login_button = driver.find_element(By. ID, "login-button")
+	
 	username_input.send_keys(username)
 	password_input.send_keys(password)
 
 	login_button.click()
 
-	header_handle = By.CLASS_NAME, "title"
+	header_handle = (By.CLASS_NAME, "title")
 	site_header = wait.until(EC.presence_of_element_located(header_handle)).text
 
 	assert site_header == "Products"
 
-@pytest.fixture()
-def Test_Wrong_Password(browser, username, password):
+@pytest.mark.parametrize("username, password", [("standard_user", "12345")])
+def test_Wrong_Password(driver, username, password):
+
+	driver.get(URL)
+	wait = WebDriverWait(driver, 5)
+
+	username_handle = (By.ID, "user-name")
+	PageReady = EC.presence_of_element_located(username_handle)
+
+	username_input = wait.until(PageReady)
+	password_input = driver.find_element(By.ID, "password")
+	login_button = driver.find_element(By. ID, "login-button")
+
 	username_input.send_keys(username)
 	password_input.send_keys(password)
 
@@ -53,6 +63,3 @@ def Test_Wrong_Password(browser, username, password):
 	print(error_text)
 
 	assert error_text == "Epic sadface: Username and password do not match any user in this service"
-
-#Test_Success("standard_user", "secret_sauce")
-#Test_Wrong_Password("standard_user", "12345")
