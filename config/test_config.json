@@ -1,6 +1,6 @@
 {
     "browser": "Firefox",
-    "mode": "Headless1",
+    "mode": "Normal",
     "implicit_wait": 10,
     "page_load_strategy": "eager"
 }
