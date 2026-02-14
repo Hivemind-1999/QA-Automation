@@ -6,6 +6,12 @@ TIMEOUT = 10
 
 class BasePage:
 
+    @classmethod
+    def navigate(cls, driver):
+        page = cls(driver)
+        page.navigate_to()
+        return page
+
     def __init__(self, driver, url=BASE_URL):
         self.driver = driver
         self.url = url

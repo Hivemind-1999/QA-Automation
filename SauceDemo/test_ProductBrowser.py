@@ -16,7 +16,7 @@ def test_GetAllProducts(driver):
 
     productBrowser = ProductBrowserPage(driver)
     productBrowser.getReady()
-    products = productBrowser.getAllProducts()
+    products = productBrowser.getAllProductNames()
 
     assert products[0] == "Sauce Labs Backpack"
     assert products[1] == "Sauce Labs Bike Light"
