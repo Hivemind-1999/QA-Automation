@@ -1,6 +1,8 @@
 from selenium.webdriver.common.by import By
 from BasePage import BasePage
 
+BASE_URL = "https://www.saucedemo.com/cart.html"
+
 class Locators:
 
     TITLE = (By.CSS_SELECTOR, "[data-test='title']")
@@ -9,7 +11,7 @@ class Locators:
 class CartPage(BasePage):
 
     def __init__(self, driver):
-        super().__init__(driver)
+        super().__init__(driver, url=BASE_URL)
 
     def getReady(self):
         return self.find(Locators.TITLE)
