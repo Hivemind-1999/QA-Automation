@@ -7,7 +7,7 @@ TIMEOUT = 10
 class BasePage:
 
     @classmethod
-    def navigate(cls, driver):
+    def open(cls, driver):
         page = cls(driver)
         page.navigate_to()
         return page
@@ -21,6 +21,12 @@ class BasePage:
     
     def find_all(self, locator):
         return WebDriverWait(self.driver, TIMEOUT).until(EC.presence_of_all_elements_located(locator))
+    
+    def confirmAbsence(self, locator):
+        self.driver.implicitly_wait(0)
+        elements = self.driver.find_elements(*locator)
+        self.driver.implicitly_wait(TIMEOUT)
+        return len(elements) == 0
     
     def navigate_to(self):
         return self.driver.get(self.url)
