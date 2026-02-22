@@ -1,5 +1,6 @@
 from selenium.webdriver.common.by import By
 from BasePage import BasePage
+from CheckoutPage import CheckoutPage
 
 BASE_URL = "https://www.saucedemo.com/cart.html"
 
@@ -8,7 +9,7 @@ class Locators:
     TITLE = (By.CSS_SELECTOR, "[data-test='title']")
     CART_ITEM = (By.CSS_SELECTOR, "[data-test='inventory-item']")
     CART_ITEM_TEXT = (By.CSS_SELECTOR, "[data-test='inventory-item-name']")
-    #CHECKOUT_BUTTON = (By.CSS_SELECTOR, "[data-test='checkout']")
+    CHECKOUT_BUTTON = (By.CSS_SELECTOR, "#checkout")
 
 class CartPage(BasePage):
 
@@ -24,8 +25,9 @@ class CartPage(BasePage):
     def confirmEmptyCart(self):
         return self.confirmAbsence(Locators.CART_ITEM)
     
-    #def proceedToCheckout(self):
-    #    self.find(Locators.CHECKOUT_BUTTON).click()
+    def goToCheckout(self):
+        self.find(Locators.CHECKOUT_BUTTON).click()
+        return CheckoutPage(self.driver)
     
     def removeItem(self):
         itemToRemove = self.find_all(Locators.CART_ITEM)[0]

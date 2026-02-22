@@ -23,10 +23,11 @@ class BasePage:
         return WebDriverWait(self.driver, TIMEOUT).until(EC.presence_of_all_elements_located(locator))
     
     def confirmAbsence(self, locator):
-        self.driver.implicitly_wait(0)
-        elements = self.driver.find_elements(*locator)
-        self.driver.implicitly_wait(TIMEOUT)
-        return len(elements) == 0
+        #self.driver.implicitly_wait(0)
+        #elements = self.driver.find_elements(*locator)
+        #self.driver.implicitly_wait(TIMEOUT)
+        #return len(elements) == 0
+        pass
     
     def navigate_to(self):
         return self.driver.get(self.url)
@@ -39,6 +40,3 @@ class BasePage:
     
     def clear_input(self, locator):
         return self.find(locator).clear()
-    
-    def getTitle(self):
-        return self.driver.title

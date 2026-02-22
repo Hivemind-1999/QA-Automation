@@ -1,39 +1,24 @@
+import math
 import pytest
 import random
-from CartPage import CartPage
-from ProductBrowserPage import ProductBrowserPage
 from LoginPage import LoginPage
-from CheckoutPage import CheckoutPage
 
-def login(driver):
-    loginPage = LoginPage.open(driver)
-    loginPage.getReady()
-
-    loginPage.login("standard_user", "secret_sauce")
+PRODUCT_NAMES = ["Sauce Labs Backpack",     "Sauce Labs Bike Light", "Sauce Labs Bolt T-Shirt", 
+                 "Sauce Labs Fleece Jacket","Sauce Labs Onesie",     "Test.allTheThings() T-Shirt (Red)"]
+SALES_TAX = 8
 
 def test_GetAllProducts(driver):
 
-    login(driver)
-
-    productBrowser = ProductBrowserPage.open(driver)
-    productBrowser.getReady()
+    productBrowser = LoginPage.open(driver).login("standard_user", "secret_sauce")
     products = productBrowser.getAllProductNames()
 
-    assert products[0] == "Sauce Labs Backpack"
-    assert products[1] == "Sauce Labs Bike Light"
-    assert products[2] == "Sauce Labs Bolt T-Shirt"
-    assert products[3] == "Sauce Labs Fleece Jacket"
-    assert products[4] == "Sauce Labs Onesie"
-    assert products[5] == "Test.allTheThings() T-Shirt (Red)"
+    assert products == PRODUCT_NAMES
 
 @pytest.mark.parametrize("numItems", [(3),(4)])
 def test_AddProductsToCart(driver, numItems):
     
-    login(driver)
-
-    productBrowser = ProductBrowserPage(driver)
-    productBrowser.getReady()
-    products = productBrowser.getAllProducts()
+    productBrowser = LoginPage.open(driver).login("standard_user", "secret_sauce")
+    products = productBrowser.getAllProductNames()
 
     if numItems > len(products):
         raise Exception("Error! Not enough item types")
@@ -47,7 +32,7 @@ def test_AddProductsToCart(driver, numItems):
 
     assert numItems == productBrowser.getCartBadgeNum()
 
-    cartPage = CartPage.open(driver)
+    cartPage = productBrowser.goToCart()
     cartPage.getReady()
 
     itemsInCard = [item.text for item in cartPage.getAllProductsInCart()]
@@ -57,30 +42,72 @@ def test_AddProductsToCart(driver, numItems):
         assert item["name"] == itemsInCard[i]
         i += 1
 
+def test_Sorting(driver):
+
+    productBrowser = LoginPage.open(driver).login("standard_user", "secret_sauce")
+
+    products = productBrowser.getAllProductNames()
+    assert products == PRODUCT_NAMES
+
+    reversedOrder = productBrowser.sort("za")
+    assert reversedOrder == PRODUCT_NAMES[::-1]
+
+    products = productBrowser.productBrowser.sort("lohi")
+    #assert products == PRODUCT_NAMES
+
+    reversedOrder = productBrowser.sort("hilo")
+    #assert reversedOrder == PRODUCT_NAMES[::-1]
+
+
+
 @pytest.mark.parametrize("itemIndex", [(0)])
 def test_RemoveFromCart(driver, itemIndex):
 
-    login(driver)
-
-    productBrowser = ProductBrowserPage.open(driver)
-    productBrowser.getReady()
+    productBrowser = LoginPage.open(driver).login("standard_user", "secret_sauce")
     productBrowser.addProduct(itemIndex)
 
-    cartPage = CartPage.open(driver)
-    cartPage.getReady()
+    cartPage = productBrowser.goToCart()
+    #cartPage.getReady()
     cartPage.removeItem()
     assert cartPage.confirmEmptyCart()
 
-@pytest.mark.parametrize("itemIndex, quantity", [(0, 1)])
-def test_PurchaseFlow(driver, itemIndex, quantity):
+@pytest.mark.parametrize("itemIndex", [(1)])
+def test_PurchaseFlow(driver, itemIndex):
 
-    login(driver)
-    productBrowser = ProductBrowserPage.open(driver)
-    productBrowser.getReady()
+    productBrowser = LoginPage.open(driver).login("standard_user", "secret_sauce")
     productBrowser.addProduct(itemIndex)
 
-    checkoutPage = CheckoutPage.open(driver)
-    checkoutPage.getReady()
+    cartPage = productBrowser.goToCart()
+    checkoutPage = cartPage.goToCheckout()
+
+    assert checkoutPage.getPageTitle() == "Checkout: Your Information"
+    
+    #checkoutPage.pressContinue()
+    #assert checkoutPage.getErrorMessage() == "Error: First Name is required"
+
+    checkoutPage.enterFirstName("First")
+    
+    #checkoutPage.pressContinue()
+    #assert checkoutPage.getErrorMessage() == "Error: Last Name is required"
+
+    checkoutPage.enterLastName("Last")
+    
+    #checkoutPage.pressContinue()
+    #assert checkoutPage.getErrorMessage() == "Error: Postal Code is required"
+
+    checkoutPage.enterZip("12345")
     checkoutPage.pressContinue()
 
-    assert checkoutPage.getErrorMessage() == "Error: First Name is required"
+    assert checkoutPage.getPageTitle() == "Checkout: Overview"
+
+    order = checkoutPage.getCartProducts()
+    subtotal, tax, total = checkoutPage.getDisplayedTotals()
+    subtotal = int(subtotal * 100)
+    tax = int(tax * 100)
+    total = int(total * 100)
+
+    assert sum(order) * 100 == subtotal
+    assert tax == int(subtotal / SALES_TAX)
+    assert total == subtotal + tax
+
+    

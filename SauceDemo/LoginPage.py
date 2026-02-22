@@ -1,4 +1,5 @@
 from BasePage import BasePage
+from ProductBrowserPage import ProductBrowserPage
 from selenium.webdriver.common.by import By
 
 class Locators:
@@ -21,6 +22,7 @@ class LoginPage(BasePage):
         self.enter_text(Locators.USERNAME, username)
         self.enter_text(Locators.PASSWORD, password)
         self.click(Locators.LOGIN_BUTTON)
+        return ProductBrowserPage(self.driver)
 
     def getErrorMessage(self):
         error_widget = self.find(self.ERROR_BOX)
