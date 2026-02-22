@@ -7,6 +7,7 @@ class Locators:
 
     TITLE = (By.CSS_SELECTOR, "[data-test='title']")
     CONTINUE = (By.CSS_SELECTOR, "#continue")
+    FINISH = (By.CSS_SELECTOR, "#finish")
     FIRST_NAME = (By.CSS_SELECTOR, "#first-name")
     LAST_NAME = (By.CSS_SELECTOR, "#last-name")
     POSTAL_CODE = (By.CSS_SELECTOR, "#postal-code")
@@ -17,6 +18,8 @@ class Locators:
     SUBTOTAL = (By.CSS_SELECTOR, "[data-test='subtotal-label']")
     TAX = (By.CSS_SELECTOR, "[data-test='tax-label']")
     TOTAL = (By.CSS_SELECTOR, "[data-test='total-label']")
+    CONFIRMATION = (By.CSS_SELECTOR, "[data-test='complete-header']")
+    BACK_TO_BROWSER = (By.CSS_SELECTOR, "[data-test='back-to-products']")
 
 class CheckoutPage(BasePage):
     def __init__(self, driver):
@@ -42,6 +45,17 @@ class CheckoutPage(BasePage):
 
     def pressContinue(self):
         self.find(Locators.CONTINUE).click()
+
+    def pressFinish(self):
+        self.find(Locators.FINISH).click()
+
+    def getConfirmationMessage(self):
+        return self.find(Locators.CONFIRMATION).text
+
+    def backToProducts(self):
+        self.find(Locators.BACK_TO_BROWSER).click()
+        from ProductBrowserPage import ProductBrowserPage
+        return ProductBrowserPage(self.driver)
 
     def getCartProducts(self):
         cartProducts = self.find_all(Locators.CART_PRODUCTS)

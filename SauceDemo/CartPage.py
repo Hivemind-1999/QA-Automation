@@ -1,6 +1,5 @@
 from selenium.webdriver.common.by import By
 from BasePage import BasePage
-from CheckoutPage import CheckoutPage
 
 BASE_URL = "https://www.saucedemo.com/cart.html"
 
@@ -27,6 +26,7 @@ class CartPage(BasePage):
     
     def goToCheckout(self):
         self.find(Locators.CHECKOUT_BUTTON).click()
+        from CheckoutPage import CheckoutPage
         return CheckoutPage(self.driver)
     
     def removeItem(self):

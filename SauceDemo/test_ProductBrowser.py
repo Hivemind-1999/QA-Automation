@@ -1,10 +1,10 @@
-import math
 import pytest
 import random
 from LoginPage import LoginPage
 
 PRODUCT_NAMES = ["Sauce Labs Backpack",     "Sauce Labs Bike Light", "Sauce Labs Bolt T-Shirt", 
                  "Sauce Labs Fleece Jacket","Sauce Labs Onesie",     "Test.allTheThings() T-Shirt (Red)"]
+PRODUCT_PRICES = [29.99, 9.99, 15.99, 49.99, 7.99, 15.99]
 SALES_TAX = 8
 
 def test_GetAllProducts(driver):
@@ -46,17 +46,17 @@ def test_Sorting(driver):
 
     productBrowser = LoginPage.open(driver).login("standard_user", "secret_sauce")
 
-    products = productBrowser.getAllProductNames()
-    assert products == PRODUCT_NAMES
+    names = productBrowser.getAllProductNames()
+    assert names == PRODUCT_NAMES
 
-    reversedOrder = productBrowser.sort("za")
-    assert reversedOrder == PRODUCT_NAMES[::-1]
+    reversedNames = productBrowser.sort("za")
+    assert reversedNames == PRODUCT_NAMES[::-1]
 
-    products = productBrowser.productBrowser.sort("lohi")
-    #assert products == PRODUCT_NAMES
+    prices = productBrowser.sort("lohi")
+    assert prices == sorted(PRODUCT_PRICES)
 
-    reversedOrder = productBrowser.sort("hilo")
-    #assert reversedOrder == PRODUCT_NAMES[::-1]
+    reversedPrices = productBrowser.sort("hilo")
+    assert reversedPrices == sorted(PRODUCT_PRICES, reverse=True)
 
 
 
@@ -100,14 +100,27 @@ def test_PurchaseFlow(driver, itemIndex):
 
     assert checkoutPage.getPageTitle() == "Checkout: Overview"
 
+    # Get price for each item in Cart, convert to cents to avoid float math
     order = checkoutPage.getCartProducts()
-    subtotal, tax, total = checkoutPage.getDisplayedTotals()
-    subtotal = int(subtotal * 100)
-    tax = int(tax * 100)
-    total = int(total * 100)
+    orderCents = [round(price * 100) for price in order]
 
-    assert sum(order) * 100 == subtotal
-    assert tax == int(subtotal / SALES_TAX)
-    assert total == subtotal + tax
+    # Get values calculated by the checkout, convert to cents to avoid float math
+    subtotal, tax, total = checkoutPage.getDisplayedTotals()
+    subtotalCents, taxCents, totalCents = round(subtotal * 100), round(tax * 100), round(total * 100)
+
+    # Check all items together equal displayed subtotal
+    assert sum(orderCents) == subtotalCents, f"Subtotal mismatch: {sum(orderCents)} != {subtotalCents}"
+
+    # Check the tax is correctly 8% of the subtotal
+    assert taxCents == int(((subtotalCents * SALES_TAX) / 100) + 0.5), f"Tax mismatch: {taxCents} != {int(((subtotalCents * SALES_TAX) / 100) + 0.5)}"
+
+    # Check the subtotal plus tax equal the total asked
+    assert totalCents == subtotalCents + taxCents, f"Total mismatch: {totalCents} != {subtotalCents + taxCents}"
+
+    checkoutPage.pressFinish()
+
+    assert checkoutPage.getConfirmationMessage() == "Thank you for your order!"
+
+    productBrowser = checkoutPage.backToProducts()
 
     

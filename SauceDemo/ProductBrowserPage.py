@@ -1,5 +1,4 @@
 from BasePage import BasePage
-from CartPage import CartPage
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 
@@ -33,8 +32,13 @@ class ProductBrowserPage(BasePage):
     def getAllProductNames(self):
         return [item.text for item in self.find_all(Locators.PRODUCT_NAME)]
     
+    def getAllProductPrices(self):
+        prices = [item.text for item in self.find_all(Locators.PRODUCT_PRICE)]
+        return [float(price[1:]) for price in prices]
+    
     def goToCart(self):
         self.find(Locators.CART_BUTTON).click()
+        from CartPage import CartPage
         return CartPage(self.driver)
     
     def getCartBadgeNum(self):
@@ -52,16 +56,19 @@ class ProductBrowserPage(BasePage):
     def sort(self, mode):
         sortButton = self.find(Locators.SORT_FEATURE)
         sortButtonSelector = Select(sortButton)
+
         match mode:
             case "az":
                 sortButtonSelector.select_by_value("az")
+                return self.getAllProductNames()
             case "za":
                 sortButtonSelector.select_by_value("za")
+                return self.getAllProductNames()
             case "lohi":
                 sortButtonSelector.select_by_value("lohi")
+                return self.getAllProductPrices()
             case "hilo":
                 sortButtonSelector.select_by_value("hilo")
+                return self.getAllProductPrices()
             case _:
                 return None
-
-        return self.getAllProductNames()
