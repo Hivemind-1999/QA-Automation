@@ -1,11 +1,10 @@
 from selenium.webdriver.common.by import By
 from BasePage import BasePage
-
-#BASE_URL = "https://www.saucedemo.com/checkout-step-one.html"
+from decimal import Decimal
+import re
 
 class Locators:
 
-    TITLE = (By.CSS_SELECTOR, "[data-test='title']")
     CONTINUE = (By.CSS_SELECTOR, "#continue")
     FINISH = (By.CSS_SELECTOR, "#finish")
     FIRST_NAME = (By.CSS_SELECTOR, "#first-name")
@@ -24,9 +23,6 @@ class Locators:
 class CheckoutPage(BasePage):
     def __init__(self, driver):
         super().__init__(driver)
-
-    def getReady(self):
-        return self.find(Locators.TITLE)
     
     def enterFirstName(self, text):
         self.enter_text(Locators.FIRST_NAME, text)
@@ -37,8 +33,10 @@ class CheckoutPage(BasePage):
     def enterZip(self, text):
         self.enter_text(Locators.POSTAL_CODE, text)
 
-    def getPageTitle(self):
-        return self.find(Locators.TITLE).text
+    def enterBuyerInfo(self, firstName, lastName, zip):
+        self.enterFirstName(firstName)
+        self.enterLastName(lastName)
+        self.enterZip(zip)
 
     def getErrorMessage(self):
         return self.find(Locators.ERROR_MESSAGE).text
@@ -62,26 +60,34 @@ class CheckoutPage(BasePage):
         order = []
 
         for item in cartProducts:
-            quantity = item.find_element(*Locators.ITEM_QUANTITY).text
-            quantity = int(quantity)
-            price = item.find_element(*Locators.ITEM_PRICE).text
-            price = float(price[1:])
-            order.append(price * quantity)
+            quantity_text = item.find_element(*Locators.ITEM_QUANTITY).text
+            quantity = int(quantity_text)
+            price_text = item.find_element(*Locators.ITEM_PRICE).text
+            price_number = re.search(r"(\d+\.\d+)", price_text)
+            if price_number:
+                price = Decimal(price_number.group(1))
+                order.append(price * quantity)
+            else:
+                raise ValueError(f"Could not parse price from: {price_text}")
 
         return order
     
     def getDisplayedTotals(self):
+        """ Extracts the totals from the page as Decimal objects, stripping labels like 'Item total: $' or 'Tax: $' """
         subtotal = self.find(Locators.SUBTOTAL).text
-        subtotal = subtotal[13:]
-        subtotal = float(subtotal)
+        
+        def extract_decimal(locator):
+            label = self.find(locator).text
+            # Find the first sequence that looks like a number (e.g., 29.99)
+            match = re.search(r"(\d+\.\d+)", label)
+            if match:
+                return Decimal(match.group(1))
+            raise ValueError(f"Could not find a price in text: '{label}'")
 
-        tax = self.find(Locators.TAX).text
-        tax = tax[6:]
-        tax = float(tax)
 
-        total = self.find(Locators.TOTAL).text
-        total = total[8:]
-        total = float(total)
+        subtotal = extract_decimal(Locators.SUBTOTAL)
+        tax = extract_decimal(Locators.TAX)
+        total = extract_decimal(Locators.TOTAL)
 
         return subtotal, tax, total
 

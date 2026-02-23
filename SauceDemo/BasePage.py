@@ -1,8 +1,10 @@
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 BASE_URL = "https://www.saucedemo.com"
 TIMEOUT = 10
+TITLE = (By.CSS_SELECTOR, "[data-test='title']")
 
 class BasePage:
 
@@ -16,18 +18,17 @@ class BasePage:
         self.driver = driver
         self.url = url
 
+    def getTitle(self):
+        return WebDriverWait(self.driver, TIMEOUT).until(EC.presence_of_element_located(TITLE)).text
+
     def find(self, locator):
         return WebDriverWait(self.driver, TIMEOUT).until(EC.presence_of_element_located(locator))
     
     def find_all(self, locator):
         return WebDriverWait(self.driver, TIMEOUT).until(EC.presence_of_all_elements_located(locator))
     
-    def confirmAbsence(self, locator):
-        #self.driver.implicitly_wait(0)
-        #elements = self.driver.find_elements(*locator)
-        #self.driver.implicitly_wait(TIMEOUT)
-        #return len(elements) == 0
-        pass
+    def not_found(self, locator):
+        return WebDriverWait(self.driver, 3).until(EC.invisibility_of_element_located(locator))
     
     def navigate_to(self):
         return self.driver.get(self.url)

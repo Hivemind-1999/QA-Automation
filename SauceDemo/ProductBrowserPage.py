@@ -2,11 +2,8 @@ from BasePage import BasePage
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 
-#BASE_URL = "https://www.saucedemo.com/inventory.html"
-
 class Locators:
 
-    INVENTORY_LIST = (By.CSS_SELECTOR, "[data-test='inventory-list']")
     PRODUCT_TILES = (By.CSS_SELECTOR, "[data-test='inventory-item-description']")
     PRODUCT_NAME = (By.CSS_SELECTOR, "[data-test='inventory-item-name']")
     PRODUCT_PRICE = (By.CSS_SELECTOR, "[data-test='inventory-item-price']")
@@ -15,16 +12,10 @@ class Locators:
     CART_BADGE = (By.CSS_SELECTOR, "[data-test='shopping-cart-badge']")
     SORT_FEATURE = (By.CSS_SELECTOR, "[data-test='product-sort-container']")
 
-    def getItemByID(self, id):
-        return (By.ID, f"item_{id}_title_link") 
-
 class ProductBrowserPage(BasePage):
 
     def __init__(self, driver):
         super().__init__(driver)
-
-    def getReady(self):
-        return self.find(Locators.INVENTORY_LIST)
     
     def getAllProducts(self):
         return self.find_all(Locators.PRODUCT_TILES)
@@ -56,19 +47,11 @@ class ProductBrowserPage(BasePage):
     def sort(self, mode):
         sortButton = self.find(Locators.SORT_FEATURE)
         sortButtonSelector = Select(sortButton)
-
+        sortButtonSelector.select_by_value(mode)
         match mode:
-            case "az":
-                sortButtonSelector.select_by_value("az")
+            case "az" | "za":
                 return self.getAllProductNames()
-            case "za":
-                sortButtonSelector.select_by_value("za")
-                return self.getAllProductNames()
-            case "lohi":
-                sortButtonSelector.select_by_value("lohi")
-                return self.getAllProductPrices()
-            case "hilo":
-                sortButtonSelector.select_by_value("hilo")
+            case "lohi" | "hilo":
                 return self.getAllProductPrices()
             case _:
                 return None

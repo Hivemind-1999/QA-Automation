@@ -3,6 +3,12 @@ import json
 import pytest
 from selenium import webdriver
 
+def set_options(options, config):
+
+    if config["mode"] == "Headless":
+        options.add_argument("--headless=new")
+    options.page_load_strategy == config["page_load_strategy"]
+
 @pytest.fixture
 def config(scope="session"):
 
@@ -10,14 +16,6 @@ def config(scope="session"):
         config = json.load(config_file)
     
     return config
-
-print(os.getcwd() + "/conftest.py")
-
-def set_options(options, config):
-
-    if config["mode"] == "Headless":
-        options.add_argument("--headless=new")
-    options.page_load_strategy == config["page_load_strategy"]
 
 @pytest.fixture
 def driver(config):
