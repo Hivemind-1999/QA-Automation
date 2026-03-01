@@ -1,7 +1,6 @@
 import pytest
 from selenium import webdriver
 from LoginPage import LoginPage
-from ProductBrowserPage import ProductBrowserPage
 
 def set_options(options, config):
 
